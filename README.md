@@ -12,6 +12,10 @@
   A beautiful, offline-capable Qibla compass app for Muslims
 </p>
 
+<p align="center">
+  <a href="https://qibla.t21.dev">qibla.t21.dev</a>
+</p>
+
 ---
 
 ## Features
@@ -97,5 +101,5 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 ---
 
 <p align="center">
-  Made with <span style="color: #ef4444;">❤</span> for the Ummah
+  Made with ❤️ for the Ummah
 </p>
