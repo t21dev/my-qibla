@@ -1,5 +1,5 @@
 import sharp from 'sharp'
-import { readFileSync, writeFileSync } from 'fs'
+import { readFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -9,8 +9,9 @@ const publicDir = join(__dirname, '..', 'public')
 // Read the SVG files
 const svg192 = readFileSync(join(publicDir, 'pwa-192x192.svg'))
 const svg512 = readFileSync(join(publicDir, 'pwa-512x512.svg'))
+const ogSvg = readFileSync(join(publicDir, 'og-image.svg'))
 
-// Generate PNG files
+// Generate PWA icons
 await sharp(svg192)
   .resize(192, 192)
   .png()
@@ -27,4 +28,10 @@ await sharp(svg192)
   .png()
   .toFile(join(publicDir, 'apple-touch-icon.png'))
 
-console.log('Icons generated successfully!')
+// Generate OG image for social sharing (1200x630)
+await sharp(ogSvg)
+  .resize(1200, 630)
+  .png()
+  .toFile(join(publicDir, 'og-image.png'))
+
+console.log('All icons and OG image generated successfully!')
