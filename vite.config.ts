@@ -13,8 +13,8 @@ export default defineConfig({
     }),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'og-image.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
+      registerType: 'prompt',
+      includeAssets: ['favicon.svg', 'og-image.svg', 'pwa-192x192.png', 'pwa-512x512.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'My Qibla',
         short_name: 'Qibla',
@@ -61,6 +61,10 @@ export default defineConfig({
             },
           },
         ],
+      },
+      devOptions: {
+        enabled: true,
+        type: 'module',
       },
     }),
   ],
