@@ -24,6 +24,8 @@ export interface QiblaState {
   needsLocationPermission: boolean
   // Whether orientation permission is needed (iOS)
   needsOrientationPermission: boolean
+  // Whether device is mobile
+  isMobile: boolean
   // Request all necessary permissions
   requestPermissions: () => Promise<void>
 }
@@ -87,6 +89,7 @@ export function useQibla(): QiblaState {
     isReady,
     needsLocationPermission,
     needsOrientationPermission,
+    isMobile: orientation.isMobile,
     requestPermissions,
   }
 }

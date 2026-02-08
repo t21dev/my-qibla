@@ -5,6 +5,7 @@ export interface DeviceOrientationState {
   error: string | null
   permissionState: 'granted' | 'denied' | 'prompt' | null
   isSupported: boolean
+  isMobile: boolean
 }
 
 // Check if we're on iOS 13+ which requires permission
@@ -15,17 +16,30 @@ function isIOS13Plus(): boolean {
   )
 }
 
+// Check if device is mobile (has touch and likely has compass)
+function isMobileDevice(): boolean {
+  if (typeof window === 'undefined') return false
+  return (
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  )
+}
+
 export function useDeviceOrientation() {
   const [state, setState] = useState<DeviceOrientationState>({
     heading: null,
     error: null,
     permissionState: null,
     isSupported: typeof window !== 'undefined' && 'DeviceOrientationEvent' in window,
+    isMobile: isMobileDevice(),
   })
 
   const headingRef = useRef<number | null>(null)
   const rafRef = useRef<number | null>(null)
   const lastUpdateRef = useRef<number>(0)
+  const hasReceivedDataRef = useRef<boolean>(false)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Smooth the heading to reduce jitter
   const smoothHeading = useCallback((newHeading: number): number => {
@@ -59,7 +73,7 @@ export function useDeviceOrientation() {
 
       const webkitEvent = event as DeviceOrientationEvent & { webkitCompassHeading?: number }
 
-      if (webkitEvent.webkitCompassHeading !== undefined) {
+      if (webkitEvent.webkitCompassHeading !== undefined && webkitEvent.webkitCompassHeading !== null) {
         // iOS - webkitCompassHeading is degrees from magnetic north (0-360)
         heading = webkitEvent.webkitCompassHeading
       } else if (event.alpha !== null) {
@@ -71,6 +85,7 @@ export function useDeviceOrientation() {
       }
 
       if (heading !== null) {
+        hasReceivedDataRef.current = true
         const smoothed = smoothHeading(heading)
         headingRef.current = smoothed
 
@@ -82,6 +97,7 @@ export function useDeviceOrientation() {
           setState((prev) => ({
             ...prev,
             heading: smoothed,
+            error: null,
           }))
         })
       }
@@ -108,6 +124,17 @@ export function useDeviceOrientation() {
         if (permission === 'granted') {
           setState((prev) => ({ ...prev, permissionState: 'granted', error: null }))
           window.addEventListener('deviceorientation', handleOrientation, true)
+
+          // Set a timeout to check if we're receiving compass data
+          timeoutRef.current = setTimeout(() => {
+            if (!hasReceivedDataRef.current) {
+              setState((prev) => ({
+                ...prev,
+                error: 'Compass not available. Please use this app on a mobile device.',
+              }))
+            }
+          }, 2000)
+
           return true
         } else {
           setState((prev) => ({
@@ -128,6 +155,17 @@ export function useDeviceOrientation() {
       // Non-iOS or older iOS - no permission needed
       setState((prev) => ({ ...prev, permissionState: 'granted', error: null }))
       window.addEventListener('deviceorientation', handleOrientation, true)
+
+      // Set a timeout to check if we're receiving compass data
+      timeoutRef.current = setTimeout(() => {
+        if (!hasReceivedDataRef.current) {
+          setState((prev) => ({
+            ...prev,
+            error: 'Compass not available. This app works best on mobile devices with a compass sensor.',
+          }))
+        }
+      }, 2000)
+
       return true
     }
   }, [state.isSupported, handleOrientation])
@@ -138,6 +176,9 @@ export function useDeviceOrientation() {
       window.removeEventListener('deviceorientation', handleOrientation, true)
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current)
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
       }
     }
   }, [handleOrientation])

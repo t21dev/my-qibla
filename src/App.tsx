@@ -48,6 +48,7 @@ function App() {
             onRequestPermissions={qibla.requestPermissions}
             loading={qibla.loading}
             error={qibla.error}
+            isMobile={qibla.isMobile}
           />
         )}
       </main>

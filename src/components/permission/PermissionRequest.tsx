@@ -6,12 +6,14 @@ interface PermissionRequestProps {
   onRequestPermissions: () => void
   loading: boolean
   error: string | null
+  isMobile: boolean
 }
 
 export function PermissionRequest({
   onRequestPermissions,
   loading,
   error,
+  isMobile,
 }: PermissionRequestProps) {
   return (
     <Card className="max-w-sm mx-auto text-center">
@@ -40,6 +42,14 @@ export function PermissionRequest({
         To find the Qibla direction, we need access to your location and device compass.
         Your data stays on your device.
       </Text>
+
+      {!isMobile && (
+        <div className="mb-4 p-3 rounded-lg bg-yellow-500/20 border border-yellow-500/30">
+          <Caption className="text-yellow-400">
+            For the best experience, open this app on your mobile phone.
+          </Caption>
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-red-500/20 border border-red-500/30">
