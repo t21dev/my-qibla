@@ -206,7 +206,7 @@ export function Compass({ rotation, heading, qiblaDirection, className }: Compas
 
       {/* Alignment indicator text */}
       {isAligned && (
-        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/50">
+        <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/50">
           <span className="text-xs font-medium text-emerald-400">Facing Qibla</span>
         </div>
       )}
