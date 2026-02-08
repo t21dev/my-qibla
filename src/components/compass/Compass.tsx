@@ -15,6 +15,9 @@ function normalizeAngle(angle: number): number {
   return angle
 }
 
+// Tolerance in degrees for "aligned" state (±10 degrees)
+const ALIGNMENT_TOLERANCE = 10
+
 export function Compass({ rotation, heading, qiblaDirection, className }: CompassProps) {
   const directions = ['N', 'E', 'S', 'W']
   const degreeMarks = Array.from({ length: 12 }, (_, i) => i * 30)
@@ -31,11 +34,49 @@ export function Compass({ rotation, heading, qiblaDirection, className }: Compas
     setSmoothRotation(newRotation)
   }, [rotation])
 
+  // Check if Qibla is aligned (rotation close to 0)
+  const normalizedRotation = normalizeAngle(smoothRotation)
+  const isAligned = Math.abs(normalizedRotation) <= ALIGNMENT_TOLERANCE
+
   return (
     <div className={cn('relative', className)}>
       {/* Outer container with glass effect */}
       <div className="glass rounded-full p-4">
         <div className="relative w-64 h-64 sm:w-72 sm:h-72">
+          {/* Fixed alignment line - turns green when aligned */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+            <svg
+              viewBox="0 0 200 200"
+              className="w-full h-full"
+              aria-hidden="true"
+            >
+              {/* Alignment line from center to top */}
+              <line
+                x1="100"
+                y1="100"
+                x2="100"
+                y2="20"
+                stroke={isAligned ? '#10b981' : 'rgba(255,255,255,0.2)'}
+                strokeWidth={isAligned ? '3' : '2'}
+                strokeLinecap="round"
+                className="transition-all duration-200"
+              />
+              {/* Glow effect when aligned */}
+              {isAligned && (
+                <line
+                  x1="100"
+                  y1="100"
+                  x2="100"
+                  y2="20"
+                  stroke="#10b981"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  opacity="0.3"
+                />
+              )}
+            </svg>
+          </div>
+
           {/* Compass ring that rotates */}
           <div
             className="compass-rotate absolute inset-0"
@@ -157,14 +198,21 @@ export function Compass({ rotation, heading, qiblaDirection, className }: Compas
           {/* Fixed direction indicator at top */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2">
             <svg width="20" height="12" viewBox="0 0 20 12" className="drop-shadow-lg">
-              <path d="M10 12 L0 0 L20 0 Z" fill="#10b981" />
+              <path d="M10 12 L0 0 L20 0 Z" fill={isAligned ? '#10b981' : '#10b981'} />
             </svg>
           </div>
         </div>
       </div>
 
+      {/* Alignment indicator text */}
+      {isAligned && (
+        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/50">
+          <span className="text-xs font-medium text-emerald-400">Facing Qibla</span>
+        </div>
+      )}
+
       {/* Heading display */}
-      <div className="mt-4 text-center">
+      <div className="mt-8 text-center">
         <div className="text-2xl font-semibold text-white">
           {heading !== null ? `${Math.round(heading)}°` : '--°'}
         </div>
